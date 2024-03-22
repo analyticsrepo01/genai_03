@@ -1,0 +1,27 @@
+# Please enter your name/initials (no spaces or special characters allowed and all small caps), ensure that it is unique
+UNIQUE_PREFIX="mistral"  ### PLEASE UPDATE THIS
+
+# Cloud project id.
+PROJECT_IDS = !(gcloud config get-value core/project)
+PROJECT_ID = PROJECT_IDS[0]  # @param {type:"string"}
+
+# Select region based on the accelerators and regions supported by Vertex AI Prediction
+REGION = "asia-southeast1"  # @param {type:"string"}
+
+# The Cloud Storage bucket for storing experiments output.
+BUCKET_NAME = f"{PROJECT_ID}-{UNIQUE_PREFIX}-{REGION}"
+
+# The service account for deploying fine tuned model.
+# SERVICE_ACCOUNT = !(gcloud config get-value core/account)  # @param {type:"string"}
+# SERVICE_ACCOUNT = SERVICE_ACCOUNT[0]  # @param {type:"string"}
+SERVICE_ACCOUNTS= !(gcloud iam service-accounts list --project {PROJECT_ID} --format="value(email)")
+SERVICE_ACCOUNT = SERVICE_ACCOUNTS[0]
+
+BUCKET_URI = f"gs://{BUCKET_NAME}"  # @param {type:"string"}
+
+! gcloud config set project $PROJECT_ID
+! gcloud storage buckets create {BUCKET_URI} --project={PROJECT_ID} --location={REGION}
+
+import os
+
+STAGING_BUCKET = os.path.join(BUCKET_URI, "temporal")
